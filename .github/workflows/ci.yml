@@ -23,20 +23,20 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Notify Google Chat (Success)
-        if: success()
+      - name: Notify Google Chat
+        if: always()
+        env:
+          STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          COMMIT: ${{ github.sha }}
+          WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
         run: |
-          curl -X POST -H "Content-Type: application/json" \
-          -d '{
-            "text": "✅ CI SUCCESS\nRepo: '"${{ github.repository }}"'\nCommit: '"${{ github.sha }}"'"
-          }' \
-          ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          if [ "$STATUS" = "success" ]; then
+            MESSAGE="✅ CI SUCCESS\nRepo: $REPO\nCommit: $COMMIT"
+          else
+            MESSAGE="❌ CI FAILED\nRepo: $REPO\nCommit: $COMMIT\nVérifiez les logs GitHub Actions."
+          fi
 
-      - name: Notify Google Chat (Failure)
-        if: failure()
-        run: |
           curl -X POST -H "Content-Type: application/json" \
-          -d '{
-            "text": "❌ CI FAILED\nRepo: '"${{ github.repository }}"'\nCommit: '"${{ github.sha }}"'\nRegardez logs dans GitHub Actions."
-          }' \
-          ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          -d "{\"text\":\"$MESSAGE\"}" \
+          $WEBHOOK
