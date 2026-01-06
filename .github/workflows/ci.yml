@@ -1,6 +1,6 @@
 name: CI Pipeline
 
-on :
+on:
   push:
     branches: ["main"]
 
@@ -14,11 +14,29 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v3
-        with: 
+        with:
           node-version: 18
 
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
-        run: npm test       
+        run: npm test
+
+      - name: Notify Google Chat (Success)
+        if: success()
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{
+            "text": "✅ CI SUCCESS\nRepo: '"${{ github.repository }}"'\nCommit: '"${{ github.sha }}"'"
+          }' \
+          ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+
+      - name: Notify Google Chat (Failure)
+        if: failure()
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{
+            "text": "❌ CI FAILED\nRepo: '"${{ github.repository }}"'\nCommit: '"${{ github.sha }}"'\nRegardez logs dans GitHub Actions."
+          }' \
+          ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
