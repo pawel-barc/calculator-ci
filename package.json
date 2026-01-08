@@ -2,6 +2,6 @@
   "name": "calculator-ci",
   "version": "1.0.0",
   "scripts": {
-  "test": "node tests/add.test.js && node tests/multiply.test.js"
+    "test": "node tests/add.test.js && node tests/multiply.test.js && node tests/substract.test.js && node tests/divide.test.js"
   }
 }
